@@ -1,0 +1,2 @@
+## USER ##
+MAX_WARNS = 3
