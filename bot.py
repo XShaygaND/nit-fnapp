@@ -4,8 +4,8 @@ import json
 import random
 import settings
 from telebot import TeleBot, types
-from datatypes import CallbackType
-from utils import get_user, get_sudo_cids, get_callback_json
+from datatypes import CallbackType, RequestMessage
+from utils import get_user, get_sudo_cids, get_callback_json, get_request_mlist, add_message_to_request
 from handlers import handle_user_status, handle_already_mod_sudo, handle_sudo_code, handle_new_mod_callback
 from telebot.handler_backends import ContinueHandling
 
@@ -36,6 +36,11 @@ def send_blocked_message(cid):
     bot.send_message(cid, f'You have been blocked, for removal contact @Shaygan_2_2')
 
 
+def delete_request_messages(mlist):
+    for mcombo in mlist:
+        bot.delete_message(mcombo[0], mcombo[1])
+
+
 def send_mod_to_sudos(message):
     sudos = get_sudo_cids()
 
@@ -58,7 +63,8 @@ def send_mod_to_sudos(message):
     markup.row(user_btn).row(accept_btn, decline_btn)
 
     for sudo in sudos:
-        bot.send_message(sudo, 'New mod request:', reply_markup=markup)
+        msg = bot.send_message(sudo, 'New mod request:', reply_markup=markup)
+        add_message_to_request(cid, RequestMessage.rank_req, msg.chat.id, msg.message_id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -69,26 +75,33 @@ def handle_callback(call):
     if type == CallbackType.sudo_mod_req:
 
         cid = query['cid']
+        mlist = get_request_mlist(cid, RequestMessage.rank_req)
+
+        if mlist:
+            delete_request_messages(mlist)
         status, warns = handle_new_mod_callback(query)
+
 
         if status == True:
             bot.send_message(cid, 'Your mod request has been accepted.')
-            return
         
-        elif status == -1:
-            return
-        
-        bot.send_message(cid, f"Your mod request has been rejected and you've been warned, Warns: {warns}/{settings.MAX_WARNS}")
-        if warns == settings.MAX_WARNS:
-            send_blocked_message(cid)
+        elif status == False:
+            bot.send_message(cid, f"Your mod request has been rejected and you've been warned, Warns: {warns}/{settings.MAX_WARNS}")
+            if warns == settings.MAX_WARNS:
+                send_blocked_message(cid)
+
+        return
 
 
 @bot.message_handler(func=lambda message: True)
 def check_user_status(message):
     cid = message.chat.id
+    mid = message.message_id
     name = get_name(message)
 
     user_status = handle_user_status(cid, name)
+
+    bot.delete_message(cid, mid)
 
     if user_status == 1:
         bot.send_message(cid, f'Welcome {name}')
@@ -115,15 +128,18 @@ def ask_sudo_code(message):
     print(f'new sudo request from: {name}\ncode: {code}')
 
     msg = bot.send_message(cid, 'Enter sudo code:')
+    add_message_to_request(cid, RequestMessage.rank_req, cid, msg.message_id)
+
     bot.register_next_step_handler(msg, check_sudo_code, args=[code])
 
 
 @bot.message_handler(func=not_mod_sudo, commands=['mod'])
 def send_mod_request(message):
     cid = message.chat.id
-    name = get_name(message)
 
-    bot.send_message(cid, 'Request sent to sudo.')
+    msg = bot.send_message(cid, 'Request sent to sudo.')
+    add_message_to_request(cid, RequestMessage.rank_req, cid, msg.message_id)
+
     send_mod_to_sudos(message)
 
 
@@ -131,6 +147,10 @@ def check_sudo_code(message, args):
     cid = message.chat.id
     code = args[0]
     name = get_name(message)
+
+    add_message_to_request(cid, RequestMessage.rank_req, cid, message.message_id)
+    mlist = get_request_mlist(cid, RequestMessage.rank_req)
+    delete_request_messages(mlist)
 
     sudo, warns, enabled = handle_sudo_code(cid, code, message.text)
 

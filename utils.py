@@ -78,6 +78,7 @@ def get_request(cid, type):
     requestq = get_request_query(cid, type)
 
     request = Request(
+        id=requestq.doc_id,
         type=requestq['type'],
         cid=requestq['cid'],
         mid=requestq['mid'],
@@ -86,10 +87,26 @@ def get_request(cid, type):
 
     return request
 
-def create_request(type: RequestMessage, cid: int, mid: int):
-    req = Request(type=type, cid=cid, mid=mid, mlist=[])
+def create_request(type: RequestMessage, cid: int, mid: int, mlist: list=[]):
+    req = Request(type=type, cid=cid, mid=mid, mlist=mlist)
 
     return delete_instance(req, req.save())
+
+
+def add_message_to_request(rcid, type, mcid, mid):
+    request = get_request(rcid, type)
+    mcombo = [mcid, mid]
+
+    request.mlist.append(mcombo)
+
+    return delete_instance(request, request.update())
+
+
+def get_request_mlist(cid, type):
+    request = get_request(cid, type)
+    mlist = request.mlist
+
+    return delete_instance(request, mlist)
 
 
 def delete_request(cid, type):

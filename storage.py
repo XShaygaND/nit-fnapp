@@ -100,6 +100,16 @@ def save_request(type, cid, mid, mlist):
     requests.insert(query)
 
 
+def update_request(id, type, cid, mid, mlist):
+    query = {
+        'type': type,
+        'cid': cid,
+        'mid': mid,
+        'mlist': mlist,
+    }
+
+    requests.update(query, doc_ids=[id])
+
 def delete_request(cid):
     RequestQ = Query()
     return requests.remove(RequestQ.cid==cid)

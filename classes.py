@@ -1,4 +1,4 @@
-from storage import save_user, update_user, save_request, delete_request
+from storage import save_user, update_user, save_request, update_request, delete_request
 from typing import Union
 
 
@@ -39,7 +39,7 @@ class User:
     
     def update(self):
         update_user(
-            self.id,
+            id=self.id,
             cid=self.cid,
             name=self.name,
             enabled=self.enabled,
@@ -60,7 +60,7 @@ class Delivery:
 
 
 class Request:
-    def __init__(self, id: int = None, type:str = None, cid: int = None, mid:int = None, mlist:Union[int, dict] = None):
+    def __init__(self, id: int = None, type:str = None, cid: int = None, mid:int = None, mlist:list = None):
         self.id = id
         self.type = type
         self.cid = cid
@@ -73,6 +73,15 @@ class Request:
             cid=self.cid,
             mid=self.mid,
             mlist=self.mlist,
+        )
+
+    def update(self):
+        update_request(
+            id=self.id,
+            type=self.type,
+            cid=self.cid,
+            mid=self.mid,
+            mlist=self.mlist
         )
 
     def delete(self):
