@@ -75,6 +75,9 @@ def handle_callback(call):
             bot.send_message(cid, 'Your mod request has been accepted.')
             return
         
+        elif status == -1:
+            return
+        
         bot.send_message(cid, f"Your mod request has been rejected and you've been warned, Warns: {warns}/{settings.MAX_WARNS}")
         if warns == settings.MAX_WARNS:
             send_blocked_message(cid)

@@ -45,6 +45,11 @@ def handle_new_mod_callback(query):
     status = query['status']
     user = get_user(cid)
 
+    already_requested = request_exists(cid, RequestMessage.rank_req)
+
+    if not already_requested:
+        return delete_instance(user, (-1, user.warns))
+
     if status:
         user.is_mod = True
         user.update()
