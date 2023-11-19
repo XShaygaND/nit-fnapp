@@ -148,6 +148,8 @@ def handle_password(chat_id, meal, password):
     order.status = OrderStatus.password_sent
     order.update()
 
+    delete_request(chat_id, RequestType.order_req)
+
     return delete_instance(order, 1)
 
 
