@@ -50,32 +50,48 @@ def get_sudo_list():
     return sudo_usersq
 
 
-def save_order(cid, customer_name, student_code, password, food_code, payment_image, status_code):
+def save_order(uid, did, status, meal, location, payment_mid, student_code, password, verification_code):
     query = {
-        'cid': cid,
-        'customer_name': customer_name,
+        'uid': uid,
+        'did': did,
+        'status': status,
+        'meal': meal,
+        'location': location,
+        'payment_mid': payment_mid,
         'student_code': student_code,
         'password': password,
-        'food_code': food_code,
-        'payment_image': payment_image,
-        'status_code': status_code,
+        'verification_code': verification_code,
     }
 
     return orders.insert(query)
 
 
-def update_order(oid, cid, customer_name, student_code, password, food_code, payment_image, status_code):
+def update_order(id, uid, did, status, meal, location, payment_mid, student_code, password, verification_code):
     query = {
-        'cid': cid,
-        'customer_name': customer_name,
+        'uid': uid,
+        'did': did,
+        'status': status,
+        'meal': meal,
+        'location': location,
+        'payment_mid': payment_mid,
         'student_code': student_code,
         'password': password,
-        'food_code': food_code,
-        'payment_image': payment_image,
-        'status_code': status_code,
+        'verification_code': verification_code,
     }
 
-    return orders.update(query, doc_ids=[oid])
+    return orders.update(query, doc_ids=[id])
+
+
+def delete_order(cid, type):
+    Order = Query()
+    return orders.remove(cond=(Order.cid==cid) & (Order.meal==type))
+
+
+def get_order_query(uid, meal=None):
+    Order = Query()
+    orderq = orders.get(cond=(Order.uid==uid) & (Order.meal==meal))
+    
+    return orderq
 
 
 def save_image(file, filename):
@@ -89,36 +105,34 @@ def get_mod_list():
 
     return mod_usersq
 
-def save_request(type, cid, mid, mlist):
+def save_request(type, cid, mlist):
     query = {
         'type': type,
         'cid': cid,
-        'mid': mid,
         'mlist': mlist,
     }
 
     requests.insert(query)
 
 
-def update_request(id, type, cid, mid, mlist):
+def update_request(id, type, cid, mlist):
     query = {
         'type': type,
         'cid': cid,
-        'mid': mid,
         'mlist': mlist,
     }
 
     requests.update(query, doc_ids=[id])
 
-def delete_request(cid):
-    RequestQ = Query()
-    return requests.remove(RequestQ.cid==cid)
+def delete_request(cid, type):
+    Request = Query()
+    return requests.remove(cond=(Request.cid==cid) & (Request.type==type))
 
 def get_request_query(cid, type):
-    RequestQ = Query()
-    requestsq =  requests.get(cond=(RequestQ.cid==cid) & (RequestQ.type==type))
+    Request = Query()
+    requestq =  requests.get(cond=(Request.cid==cid) & (Request.type==type))
 
-    return requestsq
+    return requestq
 
 
 def get_orders():
