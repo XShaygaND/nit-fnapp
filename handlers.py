@@ -77,7 +77,7 @@ def handle_new_order_callback(query):
     if type == CallbackType.order_meal:
 
         order = get_order(cid)
-        available_meals = get_meals()
+        available_meals = get_meals(cid)
         
         if meal not in available_meals:
             delete_order(cid, meal)
@@ -110,11 +110,15 @@ def handle_new_order(chat_id):
     if already_requested:
         return -1
     
-    user = get_user(chat_id)
+    meals = get_meals(chat_id)
     
-    create_order(uid=user.id, status=OrderStatus.created)
-    create_request(RequestType.order_req, chat_id)
-    return get_meals()
+    user = get_user(chat_id)
+
+    if meals:
+        create_order(uid=user.id, status=OrderStatus.created)
+        create_request(RequestType.order_req, chat_id)
+
+        return meals
 
 
 def handle_student_code(chat_id, meal, student_code):

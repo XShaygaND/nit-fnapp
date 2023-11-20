@@ -209,12 +209,11 @@ def ask_meal(message):
             markup.add(meal_btn)
         
         msg = bot.send_message(cid, 'Available meals: ', reply_markup=markup)
+
+        add_message_to_request(cid, RequestType.order_req, cid, msg.message_id)
     
     else:
-        msg = bot.send_message(cid, 'There are no available meals at this time.')
-
-    add_message_to_request(cid, RequestType.order_req, cid, msg.message_id)
-
+        bot.send_message(cid, 'There are no available meals at this time.')
 
 
 def check_sudo_code(message, args):
@@ -284,6 +283,7 @@ def send_confirmation(message, args):
 
     if status == 1:
         bot.send_message(cid, 'Your order has been registered and is awaiting approval.')
+        #TODO: Send request to mods
 
 
 if __name__ == '__main__':

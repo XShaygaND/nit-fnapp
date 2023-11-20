@@ -154,20 +154,24 @@ def get_order(cid, meal=None):
     uid = userq.doc_id
     orderq = get_order_query(uid, meal)
 
-    order = Order(
-        id=orderq.doc_id,
-        uid=orderq['uid'],
-        did=orderq['did'],
-        status=orderq['status'],
-        meal=orderq['meal'],
-        location=orderq['location'],
-        payment_mid=orderq['payment_mid'],
-        student_code=orderq['student_code'],
-        password=orderq['password'],
-        verification_code=orderq['verification_code'],
-    )
+    if orderq:
 
-    return order
+        order = Order(
+            id=orderq.doc_id,
+            uid=orderq['uid'],
+            did=orderq['did'],
+            status=orderq['status'],
+            meal=orderq['meal'],
+            location=orderq['location'],
+            payment_mid=orderq['payment_mid'],
+            student_code=orderq['student_code'],
+            password=orderq['password'],
+            verification_code=orderq['verification_code'],
+        )
+
+        return order
+
+    return []
 
 
 def create_order(uid=None, did=None, status=None, meal=None, location=None, payment_mid=None, student_code=None, password=None, verification_code=None):
@@ -206,20 +210,29 @@ def get_location_type(loc):
         raise ValueError('Invalid Location')
 
 
-def get_meals():
+def get_meals(chat_id):
     now = datetime.now(settings.TIMEZONE)
+
+    meals=[]
+    meal_types = [OrderType.breakfast, OrderType.lunch, OrderType.dinner]
 
     breakfast_limit = now.replace(hour=settings.BREAKFAST_LIMIT['hour'], minute=settings.BREAKFAST_LIMIT['min'], second=0, microsecond=0)
     lunch_limit = now.replace(hour=settings.LUNCH_LIMIT['hour'], minute=30, second=0, microsecond=0)
     dinner_limit = now.replace(hour=settings.DINNER_LIMIT['hour'], minute=settings.DINNER_LIMIT['min'], second=0, microsecond=0)
 
     if now < breakfast_limit:
-        return [OrderType.breakfast, OrderType.lunch, OrderType.dinner]
+        meals.extend(OrderType.breakfast, OrderType.lunch, OrderType.dinner)
     
     elif breakfast_limit < now < lunch_limit:
-        return [OrderType.lunch, OrderType.dinner]
+        meals.extend(OrderType.lunch, OrderType.dinner)
     
     elif lunch_limit < now < dinner_limit:
-        return [OrderType.dinner]
+        meals.append(OrderType.dinner)
+
+    for meal in meal_types:
+        exists = get_order(chat_id, meal)
+
+        if exists:
+            meals.remove(meal)
     
-    return []
+    return meals
