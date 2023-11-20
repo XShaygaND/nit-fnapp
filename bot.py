@@ -17,7 +17,9 @@ bot = TeleBot(token)
 inline_btn = types.InlineKeyboardButton
 
 
-def get_name(message):
+def get_name(message: types.Message) -> str:
+    """Takes a `Message` object and returns a user's `username` if they have one and their `first_name` if they don't"""
+
     chat = message.chat
 
     if chat.username:
@@ -25,22 +27,36 @@ def get_name(message):
     return chat.first_name
 
 
-def not_mod_sudo(message):
+def not_mod_sudo(message: types.Message) -> bool:
+    """Takes a `Message` object and returns a bool indicating if the user is either mod or sudo"""
+
     cid = message.chat.id
 
     return not handle_already_mod_sudo(cid)
 
 
-def send_blocked_message(cid):
-    bot.send_message(cid, f'You have been blocked, for removal contact @Shaygan_2_2')
+def send_blocked_message(chat_id: int) -> None:
+    """Takes a cid and sends a message to the certain cid to notify them that their user is now disabled"""
+
+    bot.send_message(
+        chat_id, f'You have been blocked, for removal contact @Shaygan_2_2')
+    # TODO: make it more advanced
 
 
-def delete_request_messages(mlist):
+def delete_request_messages(mlist: list[list]) -> None:
+    """
+    Takes a list of message lists and deletes each of them
+
+    format: [[cid, mid], [cid, mid], ...]
+    """
+
     for mcombo in mlist:
         bot.delete_message(mcombo[0], mcombo[1])
 
 
-def send_mod_to_sudos(message):
+def send_mod_to_sudos(message: types.Message) -> None:
+    """Takes a `Message` object and sends a mod request message to all the sudos which can be handled later"""
+
     sudos = get_sudo_cids()
 
     name = get_name(message)
@@ -63,11 +79,20 @@ def send_mod_to_sudos(message):
 
     for sudo in sudos:
         msg = bot.send_message(sudo, 'New mod request:', reply_markup=markup)
-        add_message_to_request(cid, RequestType.rank_req, msg.chat.id, msg.message_id)
+        add_message_to_request(cid, RequestType.rank_req,
+                               msg.chat.id, msg.message_id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
-def handle_callback(call):
+def handle_callback(call: types.CallbackQuery) -> None:
+    """
+    Base callback handler for inline_btn callbacks
+
+    `CallbackType.sudo_mod`: Handles callbacks from mod inline_btn requests that were sent to sudos
+    `CallbackType.order_meal`: Handles meal selection callbacks from series of meal inline_btns sent to user
+    `CalblackType.order_location`: Handles location selection callbacks from series of location inline_btns sent to user
+    """
+
     query = json.loads(call.data)
     type = query['type']
 
@@ -83,14 +108,15 @@ def handle_callback(call):
 
         if status == True:
             bot.send_message(cid, 'Your mod request has been accepted.')
-        
+
         elif status == False:
-            bot.send_message(cid, f"Your mod request has been rejected and you've been warned, Warns: {warns}/{settings.MAX_WARNS}")
+            bot.send_message(
+                cid, f"Your mod request has been rejected and you've been warned, Warns: {warns}/{settings.MAX_WARNS}")
             if warns == settings.MAX_WARNS:
                 send_blocked_message(cid)
 
         return
-    
+
     elif type == CallbackType.order_meal:
 
         cid = query['cid']
@@ -106,7 +132,7 @@ def handle_callback(call):
             bot.send_message(cid, 'Meal is not available')
 
             return
-            
+
         markup = types.InlineKeyboardMarkup()
         markup.row_width = 1
 
@@ -124,23 +150,32 @@ def handle_callback(call):
         ))
 
         markup.add(university, aminian, reyhane)
-            
-        bot.edit_message_text(text='Select location:', chat_id=cid, message_id=call.message.message_id, reply_markup=markup)
-    
-    elif type ==  CallbackType.order_location:
+
+        bot.edit_message_text(text='Select location:', chat_id=cid,
+                              message_id=call.message.message_id, reply_markup=markup)
+
+    elif type == CallbackType.order_location:
         cid = query['cid']
         meal = query['meal']
 
         status = handle_new_order_callback(query)
 
         if status:
-            msg = bot.edit_message_text("Student no.:", cid, call.message.message_id, reply_markup=None)
+            msg = bot.edit_message_text(
+                "Student no.:", cid, call.message.message_id, reply_markup=None)
 
             bot.register_next_step_handler(msg, ask_password, args=[meal])
 
 
 @bot.message_handler(func=lambda message: True)
-def check_user_status(message):
+def check_user_status(message: types.Message) -> None:
+    """
+    First message_handler of the bot to check if the user is enabled
+
+    Deletes the message and continues handling it if the user is enabled
+    Ignores the message and stops further handling if the user is disabled
+    """
+
     cid = message.chat.id
     mid = message.message_id
     name = get_name(message)
@@ -151,21 +186,25 @@ def check_user_status(message):
         bot.send_message(cid, f'Welcome {name}')
     elif user_status == -1:
         return
-    
+
     bot.delete_message(cid, mid)
 
     return ContinueHandling()
 
 
 @bot.message_handler(commands=['start', 'help'])
-def send_welcome(message):
+def send_welcome(message: types.Message) -> None:
+    """Basic handler for the commands ('start', 'help') which sends a warm welcome"""
+
     cid = message.chat.id
 
     bot.send_message(cid, 'Welcome!')
+    # TODO: Make more advanced
 
 
 @bot.message_handler(func=not_mod_sudo, commands=['sudo'])
-def ask_sudo_code(message):
+def ask_sudo_code(message: types.Message) -> None:
+    """A handler for the command 'sudo' which generates a random 6 digit code and prints it in the console for the user to confirm"""
 
     cid = message.chat.id
     code = random.randint(100000, 999999)
@@ -180,7 +219,9 @@ def ask_sudo_code(message):
 
 
 @bot.message_handler(func=not_mod_sudo, commands=['mod'])
-def send_mod_request(message):
+def send_mod_request(message: types.Message) -> None:
+    """A handler for the command 'mod' which sends a mod request message to all sudos to be handled"""
+
     cid = message.chat.id
 
     msg = bot.send_message(cid, 'Request sent to sudo.')
@@ -190,7 +231,9 @@ def send_mod_request(message):
 
 
 @bot.message_handler(commands=['new'])
-def ask_meal(message):
+def ask_meal(message: types.Message) -> None:
+    """A handler for the command 'new' which sends a message with a selection of meals to choose from"""
+
     cid = message.chat.id
     callback = handle_new_order(cid)
 
@@ -199,7 +242,7 @@ def ask_meal(message):
 
     if callback == -1:
         return
-    
+
     if callback:
         for meal in callback:
             meal_btn = inline_btn(text=meal, callback_data=get_callback_json(
@@ -207,16 +250,18 @@ def ask_meal(message):
                 args=[cid, meal],
             ))
             markup.add(meal_btn)
-        
+
         msg = bot.send_message(cid, 'Available meals: ', reply_markup=markup)
 
         add_message_to_request(cid, RequestType.order_req, cid, msg.message_id)
-    
+
     else:
         bot.send_message(cid, 'There are no available meals at this time.')
 
 
-def check_sudo_code(message, args):
+def check_sudo_code(message: types.Message, args: list) -> None:
+    """A handler which checks the code send by the user and compares it to the sudo code in the console"""
+
     cid = message.chat.id
     code = args[0]
     name = get_name(message)
@@ -239,8 +284,10 @@ def check_sudo_code(message, args):
     if not enabled:
         send_blocked_message(cid)
 
-    
-def ask_password(message, args):
+
+def ask_password(message: types.Message, args: list) -> None:
+    """A handler which verifies the Student no. sent by the user and asks for the password"""
+
     cid = message.chat.id
     mid = message.message_id
     student_code = message.text
@@ -249,7 +296,8 @@ def ask_password(message, args):
     bot.delete_message(cid, mid)
 
     if not student_code.isdigit():
-        msg = bot.send_message(cid, 'Student no. can only consist of digits; Student code:')
+        msg = bot.send_message(
+            cid, 'Student no. can only consist of digits; Student code:')
         add_message_to_request(cid, RequestType.order_req, cid, msg.id)
         bot.register_next_step_handler(msg, ask_password, args=[meal])
         return
@@ -262,7 +310,8 @@ def ask_password(message, args):
         bot.register_next_step_handler(msg, send_confirmation, args=[meal])
 
 
-def send_confirmation(message, args):
+def send_confirmation(message: types.Message, args: list) -> None:
+    """A handler which verifies the password sent by the user and sends a confirmation message to the user"""
     cid = message.chat.id
     mid = message.message_id
     password = message.text
@@ -271,7 +320,8 @@ def send_confirmation(message, args):
     bot.delete_message(cid, mid)
 
     if not password.isdigit():
-        msg = bot.send_message(cid, 'Password can only consist of digits; Password:')
+        msg = bot.send_message(
+            cid, 'Password can only consist of digits; Password:')
         add_message_to_request(cid, RequestType.order_req, cid, msg.id)
         bot.register_next_step_handler(msg, send_confirmation, args=[meal])
         return
@@ -282,8 +332,9 @@ def send_confirmation(message, args):
     status = handle_password(cid, meal, password)
 
     if status == 1:
-        bot.send_message(cid, 'Your order has been registered and is awaiting approval.')
-        #TODO: Send request to mods
+        bot.send_message(
+            cid, 'Your order has been registered and is awaiting approval.')
+        # TODO: Send request to mods
 
 
 if __name__ == '__main__':
