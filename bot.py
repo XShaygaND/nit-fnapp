@@ -6,7 +6,7 @@ import settings
 from telebot import TeleBot, types
 from datatypes import CallbackType, RequestType, OrderStatus, Location
 from utils import get_user, get_sudo_cids, get_callback_json, get_request_mlist, add_message_to_request, get_meals
-from handlers import handle_user_status, handle_already_mod_sudo, handle_sudo_code, handle_new_mod_callback, handle_new_order, handle_new_order_callback, handle_student_code, handle_password
+from handlers import handle_user_status, handle_already_mod_sudo, handle_sudo_code, handle_new_mod_callback, handle_new_order, handle_new_order_callback, handle_student_code, handle_password, handle_phone_number
 from telebot.handler_backends import ContinueHandling
 
 dotenv.load_dotenv()
@@ -197,6 +197,14 @@ def check_user_status(message: types.Message) -> None:
 
     if user_status == 1:
         bot.send_message(cid, f'Welcome {name}')
+        msg = bot.send_message(cid, 'To complete your signup, send your phone number with the format below:\n```09123456789```', parse_mode='MarkdownV2')
+        add_message_to_request(cid, RequestType.signup_req, cid, msg.message_id)
+
+        bot.register_next_step_handler(msg, send_signup_confirmation)
+        bot.delete_message(cid, mid)
+
+        return
+
     elif user_status == -1:
         return
 
@@ -320,11 +328,12 @@ def ask_password(message: types.Message, args: list) -> None:
     if status == 1:
         msg = bot.send_message(cid, 'Password:')
         add_message_to_request(cid, RequestType.order_req, cid, msg.id)
-        bot.register_next_step_handler(msg, send_confirmation, args=[meal])
+        bot.register_next_step_handler(msg, send_order_confirmation, args=[meal])
 
 
-def send_confirmation(message: types.Message, args: list) -> None:
+def send_order_confirmation(message: types.Message, args: list) -> None:
     """A handler which verifies the password sent by the user and sends a confirmation message to the user"""
+
     cid = message.chat.id
     mid = message.message_id
     password = message.text
@@ -336,7 +345,7 @@ def send_confirmation(message: types.Message, args: list) -> None:
         msg = bot.send_message(
             cid, 'Password can only consist of digits; Password:')
         add_message_to_request(cid, RequestType.order_req, cid, msg.id)
-        bot.register_next_step_handler(msg, send_confirmation, args=[meal])
+        bot.register_next_step_handler(msg, send_order_confirmation, args=[meal])
         return
 
     mlist = get_request_mlist(cid, RequestType.order_req)
@@ -348,6 +357,29 @@ def send_confirmation(message: types.Message, args: list) -> None:
         bot.send_message(
             cid, 'Your order has been registered and is awaiting approval.')
         # TODO: Send request to mods
+
+
+def send_signup_confirmation(message):
+    """A handler which handles the number sent by the user and sends a confirmation message to the user"""
+
+    cid = message.chat.id
+    number = str(message.text)
+
+    add_message_to_request(cid, RequestType.signup_req, cid, message.message_id )
+
+    if not len(number) == 11 or not number[:2] == '09':
+        msg = bot.send_message(cid, "Please write a valid phone number following the format below:\n```09123456789```", parse_mode='MarkdownV2')
+        add_message_to_request(cid, RequestType.signup_req, cid, msg.message_id)
+
+        bot.register_next_step_handler(msg, send_signup_confirmation)
+
+    else:
+        bot.send_message(cid, 'Your signup has been complete')
+
+        mlist = get_request_mlist(cid, RequestType.signup_req)
+        delete_request_messages(mlist)
+
+        handle_phone_number(cid, number)
 
 
 if __name__ == '__main__':

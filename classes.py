@@ -62,12 +62,13 @@ class Order:
 
 
 class User:
-    def __init__(self, id: int = None, cid: int = None, name: str = None, order_count: int = 0, enabled: bool = True, in_command: bool = False, warns: int = 0, is_sudo: bool = False, is_mod=False) -> None:
+    def __init__(self, id: int = None, cid: int = None, name: str = None, number: int = None, order_count: int = 0, enabled: bool = True, in_command: bool = False, warns: int = 0, is_sudo: bool = False, is_mod=False) -> None:
         """Basic `__init__` for saving object data"""
         
         self.id = id
         self.cid = cid
         self.name = name
+        self.number = number
         self.enabled = enabled
         self.order_count = order_count
         self.in_command = in_command
@@ -81,6 +82,7 @@ class User:
         save_user(
             cid=self.cid,
             name=self.name,
+            number=self.number,
             enabled=self.enabled,
             order_count=self.order_count,
             warns=self.warns,

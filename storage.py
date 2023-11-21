@@ -8,7 +8,7 @@ orders = db.table('orders')
 requests = db.table('requests')
 
 
-def save_user(cid: int, name: str, enabled: bool, order_count: int, warns:int, is_sudo: bool, is_mod: bool) -> int:
+def save_user(cid: int, name: str, number: int, enabled: bool, order_count: int, warns:int, is_sudo: bool, is_mod: bool) -> int:
     """
     A function which saves the user according to the args provided to the database
 
@@ -18,6 +18,7 @@ def save_user(cid: int, name: str, enabled: bool, order_count: int, warns:int, i
     query = {
         'cid': cid,
         'name': name,
+        'number': number,
         'enabled': enabled,
         'order_count': order_count,
         'warns': warns,

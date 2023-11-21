@@ -17,6 +17,7 @@ def handle_user_status(chat_id: int, name: str) -> int:
 
     if not user_exists(chat_id):
         create_user(chat_id, name)
+        create_request(RequestType.signup_req, chat_id)
         return 1
     elif user_enabled(chat_id):
         return 0
@@ -143,6 +144,20 @@ def handle_new_order_callback(query: dict) -> int:
         order.update()
 
         return delete_instance(order, 1)
+    
+
+def handle_phone_number(chat_id: int, number: int) -> int:
+    """
+    A handler which takes `chat_id` and `number` as an argument and saves the user's number to the database
+
+    returns int
+    """
+
+    user = get_user(chat_id)
+    user.number = number
+    user.save()
+
+    return delete_instance(user, delete_request(chat_id, RequestType.signup_req))
 
 
 def handle_new_order(chat_id: int) -> Union[int, list, None]:

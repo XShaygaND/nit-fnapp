@@ -37,6 +37,7 @@ def get_user(chat_id: int) -> Union[User, None]:
             id=userq.doc_id,
             cid=userq['cid'],
             name=userq['name'],
+            number=userq['number'],
             enabled=userq['enabled'],
             order_count=userq['order_count'],
             warns=userq['warns'],

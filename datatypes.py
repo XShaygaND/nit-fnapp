@@ -11,6 +11,7 @@ class CallbackStatus:
 class RequestType:
     rank_req = 'rank_req'
     order_req = 'order_req'
+    signup_req = 'signup_req'
 
 
 class OrderType:
