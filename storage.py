@@ -142,7 +142,7 @@ def save_image(file, filename):
         new_file.write(file)
 
 
-def get_mod_list() -> list:
+def get_mod_list_query() -> list:
     """
     A function which returns a list[Document] of the users that have the attribute `is_mod==True`
 

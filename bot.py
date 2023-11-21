@@ -35,12 +35,24 @@ def not_mod_sudo(message: types.Message) -> bool:
     return not handle_already_mod_sudo(cid)
 
 
+def not_restricted(message):
+    """
+    A function which takes a message as an argument and checks if the username is restricted for public access
+
+    returns True: if user is not restricted
+    returns False: if user is restricted
+    """
+    
+    username = message.chat.username
+
+    return bool(username)
+
+
 def send_blocked_message(chat_id: int) -> None:
     """Takes a cid and sends a message to the certain cid to notify them that their user is now disabled"""
 
     bot.send_message(
-        chat_id, f'You have been blocked, for removal contact @Shaygan_2_2')
-    # TODO: make it more advanced
+        chat_id, settings.BLOCKED_MESSAGE)
 
 
 def delete_request_messages(mlist: list[list]) -> None:
@@ -52,7 +64,6 @@ def delete_request_messages(mlist: list[list]) -> None:
 
     for mcombo in mlist:
         bot.delete_message(mcombo[0], mcombo[1])
-
 
 def send_mod_to_sudos(message: types.Message) -> None:
     """Takes a `Message` object and sends a mod request message to all the sudos which can be handled later"""
@@ -75,7 +86,9 @@ def send_mod_to_sudos(message: types.Message) -> None:
         args=[cid, False],
     ))
 
-    markup.row(user_btn).row(accept_btn, decline_btn)
+    if not_restricted(message):
+        markup.row(user_btn)
+    markup.row(accept_btn, decline_btn)
 
     for sudo in sudos:
         msg = bot.send_message(sudo, 'New mod request:', reply_markup=markup)

@@ -1,6 +1,6 @@
 import json
 import settings
-from storage import get_user_query, get_sudo_list, get_mod_list, get_request_query, get_order_query
+from storage import get_user_query, get_sudo_list, get_mod_list_query, get_request_query, get_order_query
 from classes import Order, User, Delivery, Request
 from datatypes import CallbackType, RequestType, OrderType, Location, OrderStatus
 from datetime import datetime
@@ -90,6 +90,23 @@ def get_sudo_cids() -> list:
         sudo_cids.append(sudo['cid'])
 
     return sudo_cids
+
+
+def get_mod_cids() -> list:
+    """
+    A function which returns a list of mod cids
+    
+    returns list[int] if there are any mods
+    returns []: if there are no mods
+    """
+
+    mod_list = get_mod_list_query()
+    mod_cids = []
+
+    for mod in mod_list:
+        mod_cids.append(mod['cid'])
+
+    return mod_cids
 
 
 def get_callback_json(type: CallbackType, args: list) -> str:
