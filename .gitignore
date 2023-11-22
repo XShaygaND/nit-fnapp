@@ -190,4 +190,4 @@ pip-selfcheck.json
 ### DB ###
 
 images/
-db.json
+*.json

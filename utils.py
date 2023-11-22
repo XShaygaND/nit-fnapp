@@ -367,5 +367,4 @@ def get_meals(chat_id: int, sub_existing: bool = True) -> list[OrderType]:
             if exists:
                 meals.remove(meal)
 
-    print(meals)
     return meals

@@ -1,8 +1,9 @@
+import settings
 from tinydb import TinyDB, Query
 
 image_dir = 'images/'
 
-db = TinyDB('db.json')
+db = TinyDB(settings.DATABASE)
 users = db.table('users')
 orders = db.table('orders')
 requests = db.table('requests')

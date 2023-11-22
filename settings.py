@@ -1,4 +1,8 @@
 from pytz import timezone
+import dotenv
+import os
+
+dotenv.load_dotenv()
 
 ## GENERAL ##
 
@@ -17,3 +21,4 @@ MAX_WARNS = 3
 ## SERVER ##
 
 TIMEZONE = timezone('Asia/Tehran')
+DATABASE = os.getenv('DATABASE')
