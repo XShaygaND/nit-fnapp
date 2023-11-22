@@ -98,12 +98,9 @@ def handle_new_order_callback(query: dict) -> int:
     """
     A handler which handles callback from the 'new' command
 
-    if callback type is of `order_meal`:
-        returns 0 if the meal is not in available meals
-        returns 1 otherwise
-
-    if callback type is of `order_location`:
-        returns 1
+    returns -1: if the request doesnt exist
+    returns 0: if the meal is not in available meals
+    returns 1: otherwise
     """
 
     type = query['type']
@@ -134,16 +131,24 @@ def handle_new_order_callback(query: dict) -> int:
 
             return delete_instance(order, 1)
 
-    if type == CallbackType.order_location:
+    elif type == CallbackType.order_location:
         location = query['loc']
         location = get_location_type(location)
         order = get_order(cid, meal)
+        available_meals = get_meals(cid, False)
 
-        order.location = location
-        order.status = OrderStatus.location_selected
-        order.update()
+        if meal not in available_meals:
+            delete_order(cid, meal)
+            delete_request(cid, RequestType.order_req)
 
-        return delete_instance(order, 1)
+            return delete_instance(order, 0)
+
+        else:
+            order.location = location
+            order.status = OrderStatus.location_selected
+            order.update()
+
+            return delete_instance(order, 1)
     
 
 def handle_phone_number(chat_id: int, number: int) -> int:
@@ -196,6 +201,13 @@ def handle_student_code(chat_id: int, meal: OrderType, student_code: Union[int, 
 
     order = get_order(chat_id, meal)
     already_requested = request_exists(chat_id, RequestType.order_req)
+    available_meals = get_meals(chat_id, False)
+
+    if meal not in available_meals:
+        delete_order(chat_id, meal)
+        delete_request(chat_id, RequestType.order_req)
+
+        return delete_instance(order, 0)
 
     if not already_requested:
         return delete_instance(order, -1)
@@ -221,6 +233,13 @@ def handle_password(chat_id: int, meal: OrderType, password: Union[int, str]) ->
 
     order = get_order(chat_id, meal)
     already_requested = request_exists(chat_id, RequestType.order_req)
+    available_meals = get_meals(chat_id, False)
+
+    if meal not in available_meals:
+        delete_order(chat_id, meal)
+        delete_request(chat_id, RequestType.order_req)
+
+        return delete_instance(order, 0)
 
     if not already_requested:
         return delete_instance(order, -1)

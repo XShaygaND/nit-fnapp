@@ -332,7 +332,7 @@ def get_location_type(loc: str) -> Location:
         raise ValueError('Invalid Location')
 
 
-def get_meals(chat_id: int) -> list[OrderType]:
+def get_meals(chat_id: int, sub_existing: bool = True) -> list[OrderType]:
     """
     A function which takes `chat_id` as an argument and checks available meals according to current time, and remove already ordered meals by the user from it and returns the list
 
@@ -360,10 +360,12 @@ def get_meals(chat_id: int) -> list[OrderType]:
     elif lunch_limit < now < dinner_limit:
         meals.append(OrderType.dinner)
 
-    for meal in meal_types:
-        exists = get_order(chat_id, meal)
+    if sub_existing:
+        for meal in meal_types:
+            exists = get_order(chat_id, meal)
 
-        if exists:
-            meals.remove(meal)
+            if exists:
+                meals.remove(meal)
 
+    print(meals)
     return meals

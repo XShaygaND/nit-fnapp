@@ -137,7 +137,7 @@ def handle_callback(call: types.CallbackQuery) -> None:
 
         status = handle_new_order_callback(query)
 
-        if status in [-1, -2]:
+        if status == -1:
 
             return
 
@@ -173,7 +173,16 @@ def handle_callback(call: types.CallbackQuery) -> None:
 
         status = handle_new_order_callback(query)
 
-        if status:
+        if status == -1:
+
+            return
+
+        elif status == 0:
+            bot.send_message(cid, 'Meal is not available')
+
+            return
+
+        elif status == 1:
             msg = bot.edit_message_text(
                 "Student no.:", cid, call.message.message_id, reply_markup=None)
 
@@ -325,7 +334,12 @@ def ask_password(message: types.Message, args: list) -> None:
 
     status = handle_student_code(cid, meal, student_code)
 
-    if status == 1:
+    if status == 0:
+        bot.send_message(cid, 'Meal is not available')
+
+        return
+
+    elif status == 1:
         msg = bot.send_message(cid, 'Password:')
         add_message_to_request(cid, RequestType.order_req, cid, msg.id)
         bot.register_next_step_handler(msg, send_order_confirmation, args=[meal])
@@ -353,7 +367,12 @@ def send_order_confirmation(message: types.Message, args: list) -> None:
 
     status = handle_password(cid, meal, password)
 
-    if status == 1:
+    if status == 0:
+        bot.send_message(cid, 'Meal is not available')
+
+        return
+
+    elif status == 1:
         bot.send_message(
             cid, 'Your order has been registered and is awaiting approval.')
         # TODO: Send request to mods
