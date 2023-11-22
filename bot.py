@@ -11,7 +11,7 @@ from telebot.handler_backends import ContinueHandling
 
 dotenv.load_dotenv()
 
-token = os.getenv('BOT_TOKEN')
+token = settings.CURRENT_TOKEN
 bot = TeleBot(token)
 
 inline_btn = types.InlineKeyboardButton
