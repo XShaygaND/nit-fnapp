@@ -3,6 +3,7 @@ import dotenv
 import json
 import random
 import settings
+from typing import List
 from telebot import TeleBot, types
 from datatypes import CallbackType, RequestType, OrderStatus, Location
 from utils import get_user, get_sudo_cids, get_callback_json, get_request_mlist, add_message_to_request, get_meals
@@ -55,7 +56,7 @@ def send_blocked_message(chat_id: int) -> None:
         chat_id, settings.BLOCKED_MESSAGE)
 
 
-def delete_request_messages(mlist: list[list]) -> None:
+def delete_request_messages(mlist: List[List]) -> None:
     """
     Takes a list of message lists and deletes each of them
 

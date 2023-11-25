@@ -4,7 +4,7 @@ from storage import get_user_query, get_sudo_list, get_mod_list_query, get_reque
 from classes import Order, User, Delivery, Request
 from datatypes import CallbackType, RequestType, OrderType, Location, OrderStatus
 from datetime import datetime
-from typing import Union
+from typing import Union, List
 
 
 def delete_instance(instance, rtn_var=None):
@@ -332,7 +332,7 @@ def get_location_type(loc: str) -> Location:
         raise ValueError('Invalid Location')
 
 
-def get_meals(chat_id: int, sub_existing: bool = True) -> list[OrderType]:
+def get_meals(chat_id: int, sub_existing: bool = True) -> List[OrderType]:
     """
     A function which takes `chat_id` as an argument and checks available meals according to current time, and remove already ordered meals by the user from it and returns the list
 

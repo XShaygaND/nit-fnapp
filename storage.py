@@ -1,4 +1,5 @@
 import settings
+from typing import List
 from tinydb import TinyDB, Query
 
 image_dir = 'images/'
@@ -157,7 +158,7 @@ def get_mod_list_query() -> list:
 
     return mod_usersq
 
-def save_request(type: str, cid: int, mlist: list[list]) -> int:
+def save_request(type: str, cid: int, mlist: List[List]) -> int:
     """
     A function which saves the request according to the arguments provided to the database
 
@@ -173,7 +174,7 @@ def save_request(type: str, cid: int, mlist: list[list]) -> int:
     requests.insert(query)
 
 
-def update_request(id: int, type: str, cid: int, mlist: list[list]):
+def update_request(id: int, type: str, cid: int, mlist: List[List]):
     """
     A function which updates the request according to the arguments provided in the database
 
